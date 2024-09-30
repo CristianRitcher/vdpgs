@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "383534781635",
+    "project_id": "vdgps-28789",
+    "storage_bucket": "vdgps-28789.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:383534781635:android:e3c585cb0fe0e55f477e76",
+        "android_client_info": {
+          "package_name": "com.example.vdgps"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxA4apZeBE29sNwgdeCZ4iNB20Z5uwG3I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

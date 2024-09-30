@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">vdgps</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="email">Correo electrónico</string>
+    <string name="password">Contraseña</string>
+    <string name="signin">Iniciar</string>
+</resources>
