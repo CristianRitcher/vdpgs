@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation.setOnNavigationItemSelectedListener { menuItem ->
             val selectedFragment = when (menuItem.itemId) {
                 R.id.home -> MapFragment()
-                R.id.search -> MapFragment()
+                R.id.search -> LocationFragment()
                 R.id.profile -> MapFragment()
                 else -> null
             }
