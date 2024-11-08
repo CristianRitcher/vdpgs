@@ -13,7 +13,7 @@ class MainActivity : AppCompatActivity() {
 
         val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottom_navigation)
 
-        // Set initial fragment
+        // Set initial fragment // un mensaje
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, MapFragment())
             .commit()
