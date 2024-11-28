@@ -88,19 +88,3 @@ class LocationTrackerService : Service() {
         const val LOCATION_CHANNEL = "location_channel"
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

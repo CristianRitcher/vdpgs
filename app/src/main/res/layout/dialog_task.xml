@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Título de la tarea -->
+    <EditText
+        android:id="@+id/et_task_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Título de la tarea"
+        android:inputType="text"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Descripción de la tarea -->
+    <EditText
+        android:id="@+id/et_task_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Descripción"
+        android:inputType="textMultiLine"
+        android:padding="8dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Trabajador asignado -->
+    <EditText
+        android:id="@+id/et_assigned_worker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Asignado a"
+        android:inputType="text"
+        android:padding="8dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Botón para guardar -->
+    <Button
+        android:id="@+id/btn_save_task"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Guardar"
+        android:padding="12dp"
+        android:background="@color/purple_500"
+        android:textColor="@android:color/white" />
+</LinearLayout>

@@ -5,38 +5,34 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-
-
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Spinner
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.firestore.FirebaseFirestore
 
-
-
-class MapFragment : Fragment(), OnMapReadyCallback {
-
+class AdminGeolocationFragment : Fragment(), OnMapReadyCallback {
 
     private lateinit var map: GoogleMap
     private var isMapReady = false
     private lateinit var vehicleSpinner: Spinner
     private val firestore by lazy { FirebaseFirestore.getInstance() }
-    private val vehicleList = mutableListOf<Vehicle>()
-
+    private val vehicleList = mutableListOf<VehicleModel>()
+    private val vehicleMarkers = mutableMapOf<String, Marker>() // Para gestionar marcadores
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        val view = inflater.inflate(R.layout.fragment_map_fragment, container, false)
-        vehicleSpinner = view.findViewById(R.id.vehicle_spinner)
+        val view = inflater.inflate(R.layout.fragment_admin_geolocation, container, false)
+        vehicleSpinner = view.findViewById(R.id.spinner_vehicle)
         setupVehicleSpinner()
         return view
     }
@@ -44,26 +40,25 @@ class MapFragment : Fragment(), OnMapReadyCallback {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map_fragment) as? SupportMapFragment
+        val mapFragment = childFragmentManager.findFragmentById(R.id.mapView) as? SupportMapFragment
         mapFragment?.getMapAsync(this)
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
         isMapReady = true
-        val latLng = LatLng(24.0248, 104.6608)
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f))
+        val initialLatLng = LatLng(24.0248, 104.6608) // Cambiar por tu latitud y longitud inicial
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(initialLatLng, 15.0f))
+        listenToVehicleUpdates() // Escucha cambios en tiempo real
     }
 
     private fun setupVehicleSpinner() {
-        // Load vehicles from Firestore
         firestore.collection("vehiculos")
             .get()
             .addOnSuccessListener { documents ->
+                vehicleList.clear()
                 for (document in documents) {
-                    val vehicle = document.toObject(Vehicle::class.java)
-                    val lati = vehicle.latitud
-                    Log.d("MapFragment", "Item selected at position: $lati")
+                    val vehicle = document.toObject(VehicleModel::class.java)
                     vehicleList.add(vehicle)
                 }
                 val vehicleNames = vehicleList.map { it.modelo }
@@ -71,16 +66,45 @@ class MapFragment : Fragment(), OnMapReadyCallback {
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
                 vehicleSpinner.adapter = adapter
 
-                // Configura el listener después de establecer el adaptador
                 vehicleSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
                     override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                        Log.d("MapFragment", "Item selected at position: $position")
                         val selectedVehicle = vehicleList[position]
                         updateMapLocation(selectedVehicle.latitud, selectedVehicle.longitud)
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>) {
-                        Log.d("MapFragment", "No item selected")
+                        Log.d("AdminGeolocation", "No vehicle selected")
+                    }
+                }
+            }
+            .addOnFailureListener { exception ->
+                Log.e("AdminGeolocation", "Error loading vehicles", exception)
+            }
+    }
+
+    private fun listenToVehicleUpdates() {
+        firestore.collection("vehiculos")
+            .addSnapshotListener { snapshots, exception ->
+                if (exception != null) {
+                    Log.e("AdminGeolocation", "Error listening for updates", exception)
+                    return@addSnapshotListener
+                }
+
+                snapshots?.forEach { document ->
+                    val vehicle = document.toObject(VehicleModel::class.java)
+                    val latLng = LatLng(vehicle.latitud, vehicle.longitud)
+
+                    // Si el marcador ya existe, actualiza su posición
+                    if (vehicleMarkers.containsKey(vehicle.usuario_id)) {
+                        vehicleMarkers[vehicle.usuario_id]?.position = latLng
+                    } else {
+                        // Si no, crea un nuevo marcador
+                        val marker = map.addMarker(
+                            MarkerOptions()
+                                .position(latLng)
+                                .title(vehicle.modelo)
+                        )
+                        vehicleMarkers[vehicle.usuario_id] = marker!!
                     }
                 }
             }
@@ -88,16 +112,15 @@ class MapFragment : Fragment(), OnMapReadyCallback {
 
     private fun updateMapLocation(latitude: Double, longitude: Double) {
         if (isMapReady) {
-            Log.d("MapFragment", "Updating location to lat: $latitude, long: $longitude")
-            val latLng = LatLng(latitude, -longitude)
+            val latLng = LatLng(latitude, longitude)
             map.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15.0f))
         } else {
-            Log.d("map is not ready", "fail")
+            Log.d("AdminGeolocation", "Map is not ready yet")
         }
     }
 }
 
-data class Vehicle(
+data class VehicleModel(
     val modelo: String = "",
     val latitud: Double = 0.0,
     val longitud: Double = 0.0,
