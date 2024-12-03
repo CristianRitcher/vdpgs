@@ -9,7 +9,7 @@
 
         <TextView
             android:id="@+id/tvOrderTitulo"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
             android:textStyle="bold"
@@ -18,21 +18,42 @@
             app:layout_constraintEnd_toStartOf="@+id/btnEditOrder" />
 
         <TextView
+            android:text="Descripción:"
             android:id="@+id/tvOrderDescripcion"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvOrderTitulo"
+            app:layout_constraintEnd_toStartOf="@+id/tvOrderEstado" />
+
+        <TextView
+            android:text="Estado:"
+            android:id="@+id/tvOrderEstado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOrderDescripcion"
+            app:layout_constraintEnd_toStartOf="@+id/tvOrderFlotilla" />
+
+        <TextView
+            android:text="Flotilla:"
+            android:id="@+id/tvOrderFlotilla"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvOrderEstado"
             app:layout_constraintEnd_toStartOf="@+id/btnEditOrder" />
 
-
         <ImageButton
-        android:id="@+id/btnEditOrder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_edit"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+            android:id="@+id/btnEditOrder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_edit"
+            app:layout_constraintTop_toTopOf="@+id/tvOrderTitulo"
+            app:layout_constraintEnd_toEndOf="@+id/tvOrderFlotilla"
+            android:alpha="0.1"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

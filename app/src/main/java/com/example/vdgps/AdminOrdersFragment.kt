@@ -6,7 +6,9 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.EditText
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -79,17 +81,43 @@ class AdminOrdersFragment : Fragment() {
             }
     }
 
-
     private fun showOrderDialog(order: Orden?) {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_order_form, null)
         val tituloEditText = dialogView.findViewById<EditText>(R.id.etTitulo)
         val descripcionEditText = dialogView.findViewById<EditText>(R.id.etDescripcion)
+        val spinnerEstado = dialogView.findViewById<Spinner>(R.id.spinnerEstado)
+        val spinnerCorreo = dialogView.findViewById<Spinner>(R.id.spinnerCorreo)
+
+        // Configurar Spinner de estado
+        val estados = listOf("En curso", "Terminado", "Cancelado")
+        val estadoAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, estados)
+        estadoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerEstado.adapter = estadoAdapter
 
         // Precargar datos si se está editando
         order?.let {
             tituloEditText.setText(it.titulo)
             descripcionEditText.setText(it.descripcion)
+            spinnerEstado.setSelection(estados.indexOf(it.estado))
         }
+
+        // Cargar correos de usuarios desde Firestore
+        db.collection("usuarios").get()
+            .addOnSuccessListener { snapshot ->
+                val correos = snapshot.documents.mapNotNull { it.getString("correo") }
+                val correoAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, correos)
+                correoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                spinnerCorreo.adapter = correoAdapter
+
+                // Precargar correo seleccionado si es edición
+                order?.let {
+                    val selectedIndex = correos.indexOf(it.usuarioId)
+                    if (selectedIndex >= 0) spinnerCorreo.setSelection(selectedIndex)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("AdminOrdersFragment", "Error al cargar correos: ${e.message}", e)
+            }
 
         AlertDialog.Builder(requireContext())
             .setTitle(if (order == null) "Agregar Orden" else "Editar Orden")
@@ -97,6 +125,8 @@ class AdminOrdersFragment : Fragment() {
             .setPositiveButton("Guardar") { _, _ ->
                 val titulo = tituloEditText.text.toString()
                 val descripcion = descripcionEditText.text.toString()
+                val estadoSeleccionado = spinnerEstado.selectedItem.toString()
+                val correoSeleccionado = spinnerCorreo.selectedItem.toString()
 
                 if (titulo.isNotBlank() && descripcion.isNotBlank()) {
                     val newOrder = Orden(
@@ -105,8 +135,8 @@ class AdminOrdersFragment : Fragment() {
                         descripcion = descripcion,
                         inicio = order?.inicio ?: Timestamp.now(),
                         final = order?.final ?: Timestamp.now(),
-                        estado = order?.estado ?: "pendiente",
-                        usuarioId = order?.usuarioId ?: "user_123"
+                        estado = estadoSeleccionado,
+                        usuarioId = correoSeleccionado
                     )
                     saveOrder(newOrder)
                 } else {
@@ -132,21 +162,28 @@ class AdminOrdersFragment : Fragment() {
             db.collection("ordenes").add(orderData)
                 .addOnSuccessListener { documentReference ->
                     Log.d("AdminOrdersFragment", "Orden agregada con ID: ${documentReference.id}")
+                    Toast.makeText(requireContext(), "Orden agregada exitosamente", Toast.LENGTH_SHORT).show()
                     loadOrders()
                 }
                 .addOnFailureListener { e ->
                     Log.e("AdminOrdersFragment", "Error al agregar orden: ${e.message}", e)
+                    Toast.makeText(requireContext(), "Error al guardar la orden", Toast.LENGTH_SHORT).show()
+
                 }
         } else {
             // Actualizar orden existente
             db.collection("ordenes").document(order.id).set(orderData)
                 .addOnSuccessListener {
                     Log.d("AdminOrdersFragment", "Orden actualizada con ID: ${order.id}")
+                    Toast.makeText(requireContext(), "Orden actualizada exitosamente", Toast.LENGTH_SHORT).show()
+
                     loadOrders()
                 }
                 .addOnFailureListener { e ->
                     Log.e("AdminOrdersFragment", "Error al actualizar orden: ${e.message}", e)
+                    Toast.makeText(requireContext(), "Error al actualizar la orden", Toast.LENGTH_SHORT).show()
                 }
         }
     }
+
 }
